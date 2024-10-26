@@ -1,0 +1,737 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">    
+    <title>Button Simulator Game</title>
+
+    <style>
+        body {
+            user-select: none;
+            background-color: white;
+        }
+    </style>
+</head>
+<body></body>
+<a href="index.html">Home</a>
+<button id="zone1btn" onclick="enterzone1()">Zone 1</button>
+<button id="zone2btn" onclick="enterzone2()">Zone 2 (requires 3 score)</button>
+<button id="zone3btn" onclick="enterzone3()">Zone 3 (requires 7.75 score)</button>
+<br>
+<button onclick="saveGame()">Save Game</button>
+<button onclick="loadGame()" style="transform: translateX(600px);">Load Game</button>
+<br>
+<button onclick="toggleFormat()" style="transform: translateX(650px);">Switch Format</button>
+<br>
+
+
+
+<p>Score: <span id="scoreval1">0</span></p>
+
+<p>Money: <span id="moneyval1">0</span></p>
+<p>Multiplier: <span id="multval1">1</span></p>
+<p>Rebirth: <span id="rebval1">0</span></p>
+<p>U-Rebirth: <span id="urebval1">0</span></p>
+<p>M-Rebirth: <span id="Mrebval1">0</span></p>
+<p>S-Rebirth: <span id="Srebval1">0</span></p>
+<p>Prestige: <span id="prestigeval1">0</span></p>
+
+<div id="zone1" style="display: block;">
+
+    <div id="multiplierbuttons-container" style="border: 2px solid black; padding: 2px; margin-bottom: 5px; background-color: #ff4848; justify-content: space-evenly;">
+
+    </div>
+
+    <div id="rebirthbuttons-container" style="border: 2px solid black; padding: 2px; margin-bottom: 5px; background-color: #4873ff;">
+    
+    </div>
+
+    <div id="U-rebirthbuttons-container" style="border: 2px solid black; padding: 2px; margin-bottom: 5px; background-color: #5a48ff; display: none;">
+    
+    </div>
+
+    <div id="M-rebirthbuttons-container" style="border: 2px solid black; padding: 2px; margin-bottom: 5px; background-color: #9448ff; display: none;">
+    
+    </div>
+
+    <div id="S-rebirthbuttons-container" style="border: 2px solid black; padding: 2px; margin-bottom: 5px; background-color: #ff48c5; display: none;">
+    
+    </div>
+
+    <div id="Prestigebuttons-container"style="border: 2px solid black; padding: 5px; margin-bottom: 5px; background-color: #ffc124; display: none;">
+    
+    </div>
+</div>
+<script>
+// Game variables
+let money = 0;
+let multiplier = 1;
+let rebirth = 0;
+let U_rebirth = 0;
+let M_rebirth = 0;
+let S_rebirth = 0;
+let prestige = 0;
+let score = 0;
+let currentZone = 1;
+let useScientificNotation = false;
+
+
+
+setInterval(function() {
+    money += 1 * multiplier * ((U_rebirth * 0.1) + 1);
+    updateDisplay();
+}, 200)
+
+function saveGame() {
+    localStorage.setItem('money', JSON.stringify(money));
+    localStorage.setItem('multiplier', JSON.stringify(multiplier));
+    localStorage.setItem('rebirth', JSON.stringify(rebirth));
+    localStorage.setItem('U_rebirth', JSON.stringify(U_rebirth));
+    localStorage.setItem('M_rebirth', JSON.stringify(M_rebirth));
+    localStorage.setItem('S_rebirth', JSON.stringify(S_rebirth));
+    localStorage.setItem('prestige', JSON.stringify(prestige));
+    localStorage.setItem('currentZone', JSON.stringify(currentZone));
+    localStorage.setItem('score', JSON.stringify(score));
+}
+
+function loadGame() {
+    if (localStorage.getItem('money') !== null) {
+        money = JSON.parse(localStorage.getItem('money'));
+        multiplier = JSON.parse(localStorage.getItem('multiplier'));
+        rebirth = JSON.parse(localStorage.getItem('rebirth'));
+        U_rebirth = JSON.parse(localStorage.getItem('U_rebirth'));
+        M_rebirth = JSON.parse(localStorage.getItem('M_rebirth'));
+        S_rebirth = JSON.parse(localStorage.getItem('S_rebirth'));
+        prestige = JSON.parse(localStorage.getItem('prestige'));
+        currentZone = JSON.parse(localStorage.getItem('currentZone'));
+        score = JSON.parse(localStorage.getItem('score'));
+
+        updateDisplay();
+
+        if (currentZone === 1) {
+            enterzone1();
+        } else {
+            enterzone2();
+        }
+    }
+}
+
+function calculateScore() {
+            const logMoney = Math.log10(1 + money);
+            const logMultiplier = Math.log10(1 + multiplier);
+            const logRebirth = Math.log10(1 + rebirth);
+            const logUltraRebirth = Math.log10(1 + U_rebirth);
+            const logMegaRebirth = Math.log10(1 + M_rebirth);
+            const logSuperRebirth = Math.log10(1 + S_rebirth);
+            const logPrestige = Math.log10(1 + prestige);
+
+            const score = (
+                (logMoney / 10) +
+                (logMultiplier / 8) +
+                (logRebirth / 6) +
+                (logUltraRebirth / 4) +
+                (logMegaRebirth / 2)
+            );
+
+            return Math.min(10, Math.round(score * 100) / 100);
+        }
+
+// Update the displayed values on the screen
+function updateDisplay() {
+    score = calculateScore();
+    money = Math.round(money * 100) / 100;
+    multiplier = Math.round(multiplier * 100) / 100;
+    rebirth = Math.round(rebirth * 100) / 100;
+    U_rebirth = Math.round(U_rebirth * 100) / 100;
+    M_rebirth = Math.round(M_rebirth * 100) / 100;
+    S_rebirth = Math.round(S_rebirth * 100) / 100;
+    prestige = Math.round(prestige * 100) / 100;
+    document.getElementById("moneyval1").innerText = formatNumber(money);
+    document.getElementById("multval1").innerText = formatNumber(multiplier);
+    document.getElementById("rebval1").innerText = formatNumber(rebirth);
+    document.getElementById("urebval1").innerText = formatNumber(U_rebirth);
+    document.getElementById("Mrebval1").innerText = formatNumber(M_rebirth);
+    document.getElementById("Srebval1").innerText = formatNumber(S_rebirth);
+    document.getElementById("prestigeval1").innerText = formatNumber(prestige);
+    document.getElementById("scoreval1").innerText = score.toFixed(2);
+    if (score <= 3) {
+        document.getElementById("zone2btn").disabled = true;
+    } else {
+        document.getElementById("zone2btn").disabled = false;
+    } if (score <= 7.75) {
+        document.getElementById("zone3btn").disabled = true;
+    } else {
+        document.getElementById("zone3btn").disabled = false;
+    }
+
+}
+
+/**
+ * Creates a new button that increases the player's multiplier
+ * @param {number} cost - The cost of the button in money
+ * @param {number} gain - The amount of multiplier gained when the button is clicked
+ * @param {string} buttonText - The text to display on the button
+ * @param {string} buttonId - The id to assign to the button
+ */
+function createMultButton(cost, gain, buttonText, buttonId) {
+    const button = document.createElement("button");
+    button.id = buttonId;
+    button.innerText = `${buttonText} (Cost: ${formatNumber(cost)} money
+    Gain: ${formatNumber(gain)} Multiplier)`;
+    button.style.margin = '2px';
+    button.style.padding = '3px';
+
+    if (window.innerWidth < 768) {
+        button.style.fontSize = '1.5rem';
+        button.style.height = 'fit-content';
+        button.style.width = 'fit-content';
+        button.style.flex = '1 0 45%';
+        button.style.display = 'flex';
+        button.style.flexDirection = 'column';
+        button.style.alignItems = 'center';
+        button.style.justifyContent = 'space-between';
+        button.style.margin = '2px 1%';
+    }
+
+    let intervalId = 0;
+
+    function startInterval() {
+        intervalId = setInterval(function() {
+            if (money >= cost) {
+                money -= cost;
+                multiplier += gain * (1 + rebirth) * ((M_rebirth * 0.1) + 1);
+                updateDisplay();
+            } else {
+                clearInterval(intervalId);
+            }
+        }, 50);
+    }
+
+    button.addEventListener("mousedown", function(event) {
+        if (event.button === 0) startInterval();
+    });
+
+    button.addEventListener("mouseup", function() {
+        clearInterval(intervalId);
+    });
+
+    button.addEventListener("mouseleave", function() {
+        clearInterval(intervalId);
+    });
+
+    button.addEventListener("touchstart", function(event) {
+        startInterval();
+    });
+
+    button.addEventListener("touchend", function() {
+        clearInterval(intervalId);
+    });
+
+    button.addEventListener("touchcancel", function() {
+        clearInterval(intervalId);
+    });
+
+    document.getElementById("multiplierbuttons-container").appendChild(button);
+
+    // Add a check to see if the button is affordable every frame
+    setInterval(function() {
+        if (money >= cost) {
+            button.disabled = false;
+        } else {
+            button.disabled = true;
+        }
+    }, 100);
+}
+function createRebirthButton(cost, gain, buttonText, buttonId) {
+    const button = document.createElement("button");
+    button.id = buttonId;
+    button.innerText = `${buttonText} (Cost: ${formatNumber(cost)} multiplier\nGain: ${formatNumber(gain)} Rebirth(s))`;
+    button.style.margin = '2px';
+    button.style.padding = '3px';
+
+    if (window.innerWidth < 768) {
+        button.style.fontSize = '1.5rem';
+        button.style.height = 'fit-content';
+        button.style.width = 'fit-content';
+    }
+
+    let intervalId = 0;
+
+    function startInterval() {
+        intervalId = setInterval(function() {
+            if (multiplier >= cost) {
+                money = 0;
+                multiplier = 1;
+                rebirth += gain * (1 + U_rebirth);
+                updateDisplay();
+            } else {
+                clearInterval(intervalId);
+            }
+        }, 50);
+    }
+
+    button.addEventListener("mousedown", function(event) {
+        if (event.button === 0) startInterval();
+    });
+
+    button.addEventListener("mouseup", function() {
+        clearInterval(intervalId);
+    });
+
+    button.addEventListener("mouseleave", function() {
+        clearInterval(intervalId);
+    });
+
+    button.addEventListener("touchstart", function(event) {
+        startInterval();
+    });
+
+    button.addEventListener("touchend", function() {
+        clearInterval(intervalId);
+    });
+
+    button.addEventListener("touchcancel", function() {
+        clearInterval(intervalId);
+    });
+
+    button.addEventListener("touchleave", function() {
+        clearInterval(intervalId);
+    });
+
+    document.getElementById("rebirthbuttons-container").appendChild(button);
+
+    setInterval(function() {
+        button.disabled = multiplier < cost;
+    }, 100);
+}
+
+function createURebirthButton(cost, gain, buttonText, buttonId) {
+    const button = document.createElement("button");
+    button.id = buttonId;
+    button.innerText = `${buttonText} (Cost: ${formatNumber(cost)} rebirth\nGain: ${formatNumber(gain)} U-rebirth(s))`;
+    button.style.margin = '2px';
+    button.style.padding = '3px';
+
+    if (window.innerWidth < 768) {
+        button.style.fontSize = '1.5rem';
+        button.style.height = 'fit-content';
+        button.style.width = 'fit-content';
+    }
+
+    let intervalId = 0;
+
+    function startInterval() {
+        intervalId = setInterval(function() {
+            if (rebirth >= cost) {
+                money = 0;
+                multiplier = 1;
+                rebirth = 0;
+                U_rebirth += gain * (1 + M_rebirth);
+                updateDisplay();
+            } else {
+                clearInterval(intervalId);
+            }
+        }, 50);
+    }
+
+    button.addEventListener("mousedown", function(event) {
+        if (event.button === 0) startInterval();
+    });
+
+    button.addEventListener("mouseup", function() {
+        clearInterval(intervalId);
+    });
+
+    button.addEventListener("mouseleave", function() {
+        clearInterval(intervalId);
+    });
+
+    button.addEventListener("touchstart", function(event) {
+        startInterval();
+    });
+
+    button.addEventListener("touchend", function() {
+        clearInterval(intervalId);
+    });
+
+    button.addEventListener("touchcancel", function() {
+        clearInterval(intervalId);
+    });
+
+    button.addEventListener("touchleave", function() {
+        clearInterval(intervalId);
+    });
+
+    document.getElementById("U-rebirthbuttons-container").appendChild(button);
+
+    setInterval(function() {
+        button.disabled = rebirth < cost;
+    }, 100);
+}
+
+
+function createMRebirthButton(cost, gain, buttonText, buttonId) {
+    const button = document.createElement("button");
+    button.id = buttonId;
+    button.innerText = `${buttonText} (Cost: ${formatNumber(cost)} U-rebirth\nGain: ${formatNumber(gain)} M_rebirth(s))`;
+    button.style.margin = '2px';
+    button.style.padding = '3px';
+
+    if (window.innerWidth < 768) {
+        button.style.fontSize = '1.5rem';
+        button.style.height = 'fit-content';
+        button.style.width = 'fit-content';
+    }
+
+    let intervalId = 0;
+
+    function startInterval() {
+        intervalId = setInterval(function() {
+            if (U_rebirth >= cost) {
+                money = 0;
+                multiplier = 1;
+                rebirth = 0;
+                U_rebirth = 0;
+                M_rebirth += gain * (1 + S_rebirth);
+                updateDisplay();
+            } else {
+                clearInterval(intervalId);
+            }
+        }, 50);
+    }
+
+    button.addEventListener("mousedown", function(event) {
+        if (event.button === 0) startInterval();
+    });
+
+    button.addEventListener("mouseup", function() {
+        clearInterval(intervalId);
+    });
+
+    button.addEventListener("mouseleave", function() {
+        clearInterval(intervalId);
+    });
+
+    button.addEventListener("touchstart", function(event) {
+        startInterval();
+    });
+
+    button.addEventListener("touchend", function() {
+        clearInterval(intervalId);
+    });
+
+    button.addEventListener("touchcancel", function() {
+        clearInterval(intervalId);
+    });
+
+    button.addEventListener("touchleave", function() {
+        clearInterval(intervalId);
+    });
+
+    document.getElementById("M-rebirthbuttons-container").appendChild(button);
+
+    setInterval(function() {
+        button.disabled = U_rebirth < cost;
+    }, 100);
+}
+
+
+function createSRebirthButton(cost, gain, buttonText, buttonId) {
+    const button = document.createElement("button");
+    button.id = buttonId;
+    button.innerText = `${buttonText} (Cost: ${formatNumber(cost)} M-rebirth, Gain: ${formatNumber(gain)})`;
+
+    button.addEventListener("mousedown", function(event) {
+        let intervalId = 0;
+        if (event.button === 0) {
+            intervalId = setInterval(function() {
+                if (M_rebirth >= cost) {
+                    money = 0;
+                    multiplier = 1;
+                    rebirth = 0;
+                    U_rebirth = 0;
+                    M_rebirth = 0;
+                    S_rebirth += gain * (1 + prestige);
+                    updateDisplay();
+                } else {
+                    clearInterval(intervalId);
+                }
+            }, 50);
+        }
+
+        button.addEventListener("mouseup", function() {
+            clearInterval(intervalId);
+        });
+
+        button.addEventListener("mouseleave", function() {
+            clearInterval(intervalId);
+        });
+    });
+
+    document.getElementById("S-rebirthbuttons-container").appendChild(button);
+
+    // Add a check to see if the button is affordable every frame
+    setInterval(function() {
+        if (M_rebirth >= cost) {
+            button.disabled = false;
+        } else {
+            button.disabled = true;
+        }
+    }, 100);
+}
+
+function createPrestigeButton(cost, gain, buttonText, buttonId) {
+    const button = document.createElement("button");
+    button.id = buttonId;
+    button.innerText = `${buttonText} (Cost: ${formatNumber(cost)} S-rebirth, Gain: ${formatNumber(gain)})`;
+
+    button.addEventListener("mousedown", function(event) {
+        let intervalId = 0;
+        if (event.button === 0) {
+            intervalId = setInterval(function() {
+                if (S_rebirth >= cost) {
+                    money = 0;
+                    multiplier = 1;
+                    rebirth = 0;
+                    U_rebirth = 0;
+                    M_rebirth = 0;
+                    S_rebirth = 0;
+                    prestige += gain;
+                    updateDisplay();
+                } else {
+                    clearInterval(intervalId);
+                }
+            }, 50);
+        }
+
+        button.addEventListener("mouseup", function() {
+            clearInterval(intervalId);
+        });
+
+        button.addEventListener("mouseleave", function() {
+            clearInterval(intervalId);
+        });
+    });
+
+    document.getElementById("Prestigebuttons-container").appendChild(button);
+
+    // Add a check to see if the button is affordable every frame
+    setInterval(function() {
+        if (S_rebirth >= cost) {
+            button.disabled = false;
+        } else {
+            button.disabled = true;
+        }
+    }, 100);
+}
+
+function enterzone3() {
+    if (score >= 7.75) {
+        currentZone = 3;
+        document.getElementById('multiplierbuttons-container').innerHTML = '';
+        document.getElementById('rebirthbuttons-container').innerHTML = '';
+        document.getElementById('U-rebirthbuttons-container').innerHTML = '';
+        document.getElementById('M-rebirthbuttons-container').innerHTML = '';
+        document.getElementById('S-rebirthbuttons-container').innerHTML = '';
+        document.getElementById('Prestigebuttons-container').innerHTML = '';
+        document.getElementById('multiplierbuttons-container').style.display = 'block';
+        document.getElementById('rebirthbuttons-container').style.display = 'block';
+        document.getElementById('U-rebirthbuttons-container').style.display = 'block';
+        document.getElementById('M-rebirthbuttons-container').style.display = 'block';
+        document.getElementById('S-rebirthbuttons-container').style.display = 'none';
+        document.getElementById('Prestigebuttons-container').style.display = 'none';
+
+        createMultButton(2.10e+27, 5.79e+14, 'Increase Multiplier', 'multiplierButton36');
+        createMultButton(7.03e+29, 3.23e+15, 'Increase Multiplier', 'multiplierButton37');
+        createMultButton(9.54e+31, 6.68e+16, 'Increase Multiplier', 'multiplierButton38');
+        createMultButton(8.19e+33, 2.17e+17, 'Increase Multiplier', 'multiplierButton39');
+        createMultButton(2.03e+35, 1.85e+18, 'Increase Multiplier', 'multiplierButton40');
+        createMultButton(6.01e+37, 1.56e+19, 'Increase Multiplier', 'multiplierButton41');
+        createMultButton(2.11e+39, 3.32e+20, 'Increase Multiplier', 'multiplierButton42');
+        createMultButton(9.32e+41, 1.11e+21, 'Increase Multiplier', 'multiplierButton43');
+        createMultButton(3.69e+43, 4.32e+22, 'Increase Multiplier', 'multiplierButton44');
+        createMultButton(8.18e+45, 7.92e+23, 'Increase Multiplier', 'multiplierButton45');
+        createMultButton(2.76e+48, 6.73e+24, 'Increase Multiplier', 'multiplierButton46');
+
+        createRebirthButton(1.30e+27, 5.32e+6, 'Increase Rebirth', 'rebirthButton14');
+        createRebirthButton(1.93e+29, 2.46e+7, 'Increase Rebirth', 'rebirthButton15');
+        createRebirthButton(1.46e+31, 1.23e+8, 'Increase Rebirth', 'rebirthButton16');
+        createRebirthButton(1.19e+33, 4.61e+9, 'Increase Rebirth', 'rebirthButton17');
+        createRebirthButton(1.01e+35, 3.27e+10, 'Increase Rebirth', 'rebirthButton18');
+        createRebirthButton(7.32e+37, 1.79e+11, 'Increase Rebirth', 'rebirthButton19');
+        //createRebirthButton(5.69e+39, 1.45e+12, 'Increase Rebirth', 'rebirthButton20');
+        // createRebirthButton(4.18e+41, 1.23e+13, 'Increase Rebirth', 'rebirthButton21');
+        // createRebirthButton(3.11e+43, 1.01e+14, 'Increase Rebirth', 'rebirthButton22');
+        // createRebirthButton(2.29e+45, 7.92e+15, 'Increase Rebirth', 'rebirthButton23');
+
+        createURebirthButton(1.276e+10, 1146, 'Increase U-rebirth', 'U-rebirthButton6');
+        createURebirthButton(2.276e+11, 4.23e+3, 'Increase U-rebirth', 'U-rebirthButton7');
+        createURebirthButton(3.276e+12, 1.23e+4, 'Increase U-rebirth', 'U-rebirthButton8');
+        createURebirthButton(4.276e+13, 4.61e+4, 'Increase U-rebirth', 'U-rebirthButton9');
+        createURebirthButton(5.276e+14, 1.23e+5, 'Increase U-rebirth', 'U-rebirthButton10');
+
+        createMRebirthButton(8.32e+3, 1, 'Increase M-rebirth', 'M-rebirthButton1');
+        createMRebirthButton(4.32e+4, 4.2, 'Increase M-rebirth', 'M-rebirthButton1');
+
+
+    }
+}
+
+function enterzone2() {
+    if (score >= 3) {
+        currentZone = 2;
+        document.getElementById('multiplierbuttons-container').innerHTML = '';
+        document.getElementById('rebirthbuttons-container').innerHTML = '';
+        document.getElementById('U-rebirthbuttons-container').innerHTML = '';
+        document.getElementById('M-rebirthbuttons-container').innerHTML = '';
+        document.getElementById('S-rebirthbuttons-container').innerHTML = '';
+        document.getElementById('Prestigebuttons-container').innerHTML = '';
+        document.getElementById('multiplierbuttons-container').style.display = 'block';
+        document.getElementById('rebirthbuttons-container').style.display = 'block';
+        document.getElementById('U-rebirthbuttons-container').style.display = 'block';
+        document.getElementById('M-rebirthbuttons-container').style.display = 'none';
+        document.getElementById('S-rebirthbuttons-container').style.display = 'none';
+        document.getElementById('Prestigebuttons-container').style.display = 'none';
+
+
+
+        createMultButton(4.305099513907e+11, 4.6393051e+6, 'Increase Multiplier', 'multiplierButton20');
+        createMultButton(1.5117818363657e+12, 1.02222002e+7, 'Increase Multiplier', 'multiplierButton21');
+        createMultButton(5.2812284323927e+12, 2.24480844e+7, 'Increase Multiplier', 'multiplierButton22');
+        createMultButton(1.84929493883417e+13, 4.94566099e+7, 'Increase Multiplier', 'multiplierButton23');
+        createMultButton(6.48294715544977e+13, 1.086240708e+8, 'Increase Multiplier', 'multiplierButton24');
+        createMultButton(2.267034483903497e+14, 2.395744018e+8, 'Increase Multiplier', 'multiplierButton25');
+        createMultButton(7.944815643712267e+14, 5.264649096e+8, 'Increase Multiplier', 'multiplierButton26');
+        createMultButton(2.7746909482947907e+15, 1.1611190992e+9, 'Increase Multiplier', 'multiplierButton27');
+        createMultButton(9.7324233692217217e+15, 2.5544550994e+9, 'Increase Multiplier', 'multiplierButton28');
+        createMultButton(3.40385368122802507e+16, 5.6198750188e+9, 'Increase Multiplier', 'multiplierButton29');
+        createMultButton(1.193352993358802007e+17, 1.23651200014e+10, 'Increase Multiplier', 'multiplierButton30');
+        createMultButton(4.166745490189004047e+17, 2.71131404024e+10, 'Increase Multiplier', 'multiplierButton31');
+        createMultButton(1.4643559220650955047e+18, 5.95289090748e+10, 'Increase Multiplier', 'multiplierButton32');
+        createMultButton(5.1302160950935264077e+18, 1.308663000976e+11, 'Increase Multiplier', 'multiplierButton33');
+        createMultButton(1.79571014217080920417e+19, 2.873946800035e+11, 'Increase Multiplier', 'multiplierButton34');
+        createMultButton(6.79107045108193960007e+19, 6.2896e+11, 'Increase Multiplier', 'multiplierButton35');
+
+
+
+
+        createRebirthButton(963223960000, 1056.19, 'Increase Rebirth', 'rebirthButton7');
+        createRebirthButton(12722396000000, 3361.9, 'Increase Rebirth', 'rebirthButton8');
+        createRebirthButton(173223960000000, 10561.9, 'Increase Rebirth', 'rebirthButton9');
+        createRebirthButton(2472239600000000, 33619.9, 'Increase Rebirth', 'rebirthButton10');
+        createRebirthButton(34722396000000000, 105619.9, 'Increase Rebirth', 'rebirthButton11');
+        createRebirthButton(467223960000000000, 336199.9, 'Increase Rebirth', 'rebirthButton12');
+        createRebirthButton(5875234600000000000, 1105199.2, 'Increase Rebirth', 'rebirthButton13');
+
+        createURebirthButton(4100, 1, 'Increase U-Rebirth', 'U-rebirthButton1');
+        createURebirthButton(72480, 4.3, 'Increase U-Rebirth', 'U-rebirthButton2');
+        createURebirthButton(865000, 10.5, 'Increase U-Rebirth', 'U-rebirthButton3');
+        createURebirthButton(13682000, 62.4, 'Increase U-Rebirth', 'U-rebirthButton4');
+        createURebirthButton(257160000, 150.8, 'Increase U-Rebirth', 'U-rebirthButton5');
+
+
+
+
+    }
+}
+
+
+function enterzone1() {
+    if (score >= 0) {
+        currentZone = 1;
+        document.getElementById('multiplierbuttons-container').innerHTML = '';
+        document.getElementById('rebirthbuttons-container').innerHTML = '';
+        document.getElementById('U-rebirthbuttons-container').innerHTML = '';
+        document.getElementById('M-rebirthbuttons-container').innerHTML = '';
+        document.getElementById('S-rebirthbuttons-container').innerHTML = '';
+        document.getElementById('Prestigebuttons-container').innerHTML = '';
+        document.getElementById('multiplierbuttons-container').style.display = 'block';
+        document.getElementById('rebirthbuttons-container').style.display = 'block';
+        document.getElementById('U-rebirthbuttons-container').style.display = 'none';
+        document.getElementById('M-rebirthbuttons-container').style.display = 'none';
+        document.getElementById('S-rebirthbuttons-container').style.display = 'none';
+        document.getElementById('Prestigebuttons-container').style.display = 'none';
+
+        createMultButton(20, 1, 'Increase Multiplier', 'multiplierButton1');
+        createMultButton(70.0, 3.2, 'Increase Multiplier', 'multiplierButton2');
+        createMultButton(245.0, 7.0, 'Increase Multiplier', 'multiplierButton3');
+        createMultButton(857.5, 15.4, 'Increase Multiplier', 'multiplierButton4');
+        createMultButton(3001.2, 33.8, 'Increase Multiplier', 'multiplierButton5');
+        createMultButton(10503.9, 74.4, 'Increase Multiplier', 'multiplierButton6');
+        createMultButton(36763.7, 163.7, 'Increase Multiplier', 'multiplierButton7');
+        createMultButton(128672.9, 360.1, 'Increase Multiplier', 'multiplierButton8');
+        createMultButton(450355.2, 792.2, 'Increase Multiplier', 'multiplierButton9');
+        createMultButton(1576243.2, 1742.8, 'Increase Multiplier', 'multiplierButton10');
+        createMultButton(5506841.2, 3834.2, 'Increase Multiplier', 'multiplierButton11');
+        createMultButton(19273944.2, 8435.2, 'Increase Multiplier', 'multiplierButton12');
+        createMultButton(67458704.7, 18557.4, 'Increase Multiplier', 'multiplierButton13');
+        createMultButton(236105466.5, 40825.7, 'Increase Multiplier', 'multiplierButton14');
+        createMultButton(826369132.8, 89716.5, 'Increase Multiplier', 'multiplierButton15');
+        createMultButton(2892291964.8, 197376.3, 'Increase Multiplier', 'multiplierButton16');
+        createMultButton(10123021806.8, 434227.9, 'Increase Multiplier', 'multiplierButton17');
+        createMultButton(35430576323.8, 955301.4, 'Increase Multiplier', 'multiplierButton18');
+        createMultButton(123007017133.3, 2101663.1, 'Increase Multiplier', 'multiplierButton19');
+
+
+
+
+
+
+
+        createRebirthButton(20000, 1, 'Increase Rebirth', 'rebirthButton1');
+        createRebirthButton(260000, 3.2, 'Increase Rebirth', 'rebirthButton2');
+        createRebirthButton(3380000, 10.2, 'Increase Rebirth', 'rebirthButton3');
+        createRebirthButton(43940000, 32.76, 'Increase Rebirth', 'rebirthButton4');
+        createRebirthButton(5711720000, 105.06, 'Increase Rebirth', 'rebirthButton5');
+        createRebirthButton(74322396000, 336.19, 'Increase Rebirth', 'rebirthButton6');
+
+
+
+
+
+    }
+}
+
+
+
+
+createURebirthButton(10, 1, 'Increase U-Rebirth', 'UrebirthButton1');
+createMRebirthButton(10, 1, 'Increase M-Rebirth', 'MrebirthButton1');
+createSRebirthButton(10, 1, 'Increase S-Rebirth', 'SrebirthButton1');
+createPrestigeButton(10, 1, 'Increase Prestige', 'prestigeButton1');
+
+
+
+
+function toggleFormat() {
+    useScientificNotation = !useScientificNotation;
+
+    if (currentZone === 1) {
+        enterzone1();
+    } else if (currentZone === 2) {
+        enterzone2();
+    } else if (currentZone === 3) {
+        enterzone3();
+    }
+}
+
+function formatNumber(number) {
+    if (useScientificNotation) {
+        return number.toExponential(2);
+    } else {
+        if (number < 1000) return number.toString();
+        const suffixes = ["K", "M", "B", "T", "Qa", "Qi", "Sx", "Sp", "Oc", "No", "Dc", "Ud", "Dud", "Tud", "Qud", "Qun", "Sd", "St"];
+        let suffixIndex = Math.floor(Math.log10(number) / 3) - 1;
+        let value = number / Math.pow(1000, suffixIndex + 1);
+        return value.toFixed(2) + suffixes[suffixIndex];
+    }
+}
+
+// Initialize display
+updateDisplay();
+enterzone1();
+</script>
+
+</body>
+</html>
+

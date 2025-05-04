@@ -1,0 +1,460 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Four Heavenly Valleys</title>
+  <link rel="stylesheet" href="styles.css">
+
+</head>
+<body>
+  <div id="background_cover"></div>
+  <div id="opening_menu">
+    <h3 class="normal_header" style="color: rgb(255, 207, 119); font-size: 5vh">Four Heavenly Valleys</h3>
+    <br><br><br><br>
+    <button class="adder_buttons" style="font-size: 30px;" onclick="play()">New Game</button>
+    <br>
+    <button onclick="loadmenu()" style="font-size: 30px;" class="adder_buttons" id="loadgamebtn">Continue (load game)</button>
+  </div>
+
+  <div id="main_text_menu" style="display: none;">
+    <div id="text_body">
+      <p id="main_text">
+        At the old age of 105, you finally passed away in your sleep. On Earth, you lived a long and fulfilling life, accomplishing almost every goal that you had. Before long, your unconscious soul leaves your body and starts drifting away in the void.
+      </p>
+      <button onclick="dialogue_continue()" class="normal_buttons" id="dialogue_btn1">Continue</button>
+    </div>
+    <br>
+    <div id="fate_body" style="display: none;">
+      <h3 class="normal_header">
+        Manipulate your fate: <span id="fatepoints">0</span>
+      </h3>
+
+      <div id="fate_box">
+        <p>Last Name</p>
+        <input id="name1" value="Xu"></input>
+        <p>First Name</p>
+        <input id="name2" value="Ping"></input>
+        <br>
+        <p>Gender</p>
+        <input type="radio" id="male" name="gender" value="male" checked>
+        <label for="male">Male</label>
+        <input type="radio" id="female" name="gender" value="female">
+        <label for="female">Female</label>
+        <br>
+        <div class="fate_row">
+          <span class="fate_label">Body</span>
+          <div class="fate_controls">
+            <button class="adder_buttons" onclick="changeFatePoints('+', 'body')">+</button>
+            <button class="adder_buttons" onclick="changeFatePoints('-', 'body')">-</button>
+          </div>
+          <span class="fate_value" id="body_fate_value">Ordinary (3)</span>
+        </div>
+
+        <div class="fate_row">
+          <span class="fate_label">Comprehension</span>
+          <div class="fate_controls">
+            <button class="adder_buttons" onclick="changeFatePoints('+', 'comprehension')">+</button>
+            <button class="adder_buttons" onclick="changeFatePoints('-', 'comprehension')">-</button>
+          </div>
+          <span class="fate_value" id="comprehension_fate_value">Ordinary (3)</span>
+        </div>
+
+        <div class="fate_row">
+          <span class="fate_label">Psyche</span>
+          <div class="fate_controls">
+            <button class="adder_buttons" onclick="changeFatePoints('+', 'psyche')">+</button>
+            <button class="adder_buttons" onclick="changeFatePoints('-', 'psyche')">-</button>
+          </div>
+          <span class="fate_value" id="psyche_fate_value">Ordinary (3)</span>
+        </div>
+
+        <div class="fate_row">
+          <span class="fate_label">Charm</span>
+          <div class="fate_controls">
+            <button class="adder_buttons" onclick="changeFatePoints('+', 'charm')">+</button>
+            <button class="adder_buttons" onclick="changeFatePoints('-', 'charm')">-</button>
+          </div>
+          <span class="fate_value" id="charm_fate_value">Ordinary (3)</span>
+        </div>
+
+        <div class="fate_row">
+          <span class="fate_label">Potential</span>
+          <div class="fate_controls">
+            <button class="adder_buttons" onclick="changeFatePoints('+', 'potential')">+</button>
+            <button class="adder_buttons" onclick="changeFatePoints('-', 'potential')">-</button>
+          </div>
+          <span class="fate_value" id="potential_fate_value">False (1)</span>
+        </div>
+
+      </div>
+      <h3 class="normal_header" style="color: rgb(255, 207, 119);">
+        <button class="normal_buttons" style="font-size: 30px;" onclick="StartGame()">Start Game</button>
+      </h3>
+    </div>
+  </div>
+
+  <div id="bottom_bar" style="display: none;">
+    <div id="top_bar">
+      <span style="font-size: 2.5vh;">Age: <span id="age_topdisplay">13</span></span>
+      <span style="font-size: 2.5vh;">Days left: <span id="days_left_topdisplay">1</span></span>
+      <span style="font-size: 2.5vh;">Sect Points: <span id="sect_points_topdisplay">0</span></span>
+      <button onclick="saveGame(saveSlot)" class="normal_buttons">Save Game</button>
+    </div>
+
+    <div id="info_menu1" onclick="toggle_info_menu()">
+      <h3 style="font-size: 2.5vh; color: white;">Info</h3>
+    </div>
+
+
+
+    <div id="info_menu2" style="display: none; font-size: 2.5vh;">
+      <div id="tab_selection">
+        <h3 class="normal_header" id="player_header_info" onclick="showPlayerSection()" style="color: orange; text-decoration: underline;"></h3>
+        <h3 class="normal_header" id="combat_header_info" onclick="showCombatSection()">Combat Path</h3>
+
+      </div>
+      <div id="player_section">
+        <div>
+          <div>
+            <h3>Info</h3>
+            <div class="tooltip">Age: <span id="info_age">13</span>
+              <span class="tooltiptext">Age of your character, when the end of lifespan is reached you will die and reincarnate once more.</span>
+            </div>
+            <br>
+            <div class="tooltip">Gender: <span id="info_gender">male</span>
+              <span class="tooltiptext">Gender of your character, will affect the way you interact with other characters.</span>
+            </div>
+            <br>
+            <div class="tooltip">Health: <span id="info_health">100 / 100</span>
+              <span class="tooltiptext">Health of your character, will be reduced when you take damage and increased when you rest. This stat is influenced by your realm, vitality, combat arts, talismans, and your max qi.</span>
+            </div>
+            <br>
+            <div class="tooltip">Attack: <span id="info_attack">0</span>
+              <span class="tooltiptext">Attack power of your character, This stat is influenced by your realm, strength, combat arts, talismans, and your max qi.</span>
+            </div>
+            <br>
+            <div class="tooltip">Defense: <span id="info_defense">0</span>
+              <span class="tooltiptext">Defense of your character, This stat is influenced by your realm, resilience, combat arts, talismans, and your max qi.</span>
+            </div>
+            <br>
+            <div class="tooltip">Strength: <span id="info_strength">0</span>
+              <span class="tooltiptext">Strength of your character, increasing this stat will multiply your attack power.</span>
+            </div>
+            <br>
+            <div class="tooltip">Resilience: <span id="info_resilience">0</span>
+              <span class="tooltiptext">Resilience of your character, increasing this stat will multiply your defense power.</span>
+            </div>
+            <br>
+            <div class="tooltip">Vitality: <span id="info_vitality">0</span>
+              <span class="tooltiptext">Vitality of your character, increasing this stat will multiply your health.</span>
+            </div>
+          </div>
+
+          <div>
+            <h3>Cultivation</h3>
+            <div class="tooltip">Realm: <span id="info_realm">Low Foundation Forming</span>
+              <span class="tooltiptext">Your cultivation realm, This stat is the main result of your cultivation and influences many aspects of the game.</span>
+            </div>
+            <br>
+            <div class="tooltip">Foundation: <span id="info_foundation">1</span>
+              <span class="tooltiptext">Your cultivation foundation, This stat increases your chances of breakthrough. Your foundation can be improved via items or by stabilizing your foundation (cultivating while at 100% cultivation progress).</span>
+            </div>
+            <br>
+            <div class="tooltip">Qi: <span id="info_qi">0</span>
+              <span class="tooltiptext">Your qi, This stat is the main result of your cultivation realm and mental state, and in turn also affects stats like health, attack, and defense.</span>
+            </div>
+            <br>
+            <div class="tooltip">Cultivation Progress: <span id="info_progress">0%</span>
+              <span class="tooltiptext">Your cultivation progress is your progress within your current cultivation realm. Cultivating while at 100% cultivation progress will stabilize your foundation. To breakthrough, you need to get this stat to 100%.</span>
+            </div>
+            <br>
+            <div class="tooltip">Days Left: <span id="info_days_left">35</span>
+              <span class="tooltiptext">This shows how many days you have left remaining in the year, after reaching 0 days left you have to click advance year to continue.</span>
+            </div>
+            <br>
+            <div class="tooltip">Cultivation Technique: <span id="info_cultivation_technique">None</span>
+              <span class="tooltiptext">Your cultivation technique, this is the technique that you use to cultivate. Thus, by increasing the level of this cultivation technique, you will in turn increase your speed of cultivation and chances at breaking through.</span>
+            </div>
+            <br>
+            <div class="tooltip">Technique Level: <span id="info_cultivation_technique_level">1</span>
+              <span class="tooltiptext">Your cultivation technique level is what level your cultivation technique is, which influences cultivation speed and chances at a breakthrough.</span>
+            </div>
+            <br>
+            <div class="tooltip">Mastery: <span id="info_cultivation_technique_progress">0/0</span>
+              <span class="tooltiptext">Your cultivation technique mastery is your current mastery of your cultivation technique level, and when it reaches its max you will be able to reach the next level within your cultivation technique.</span>
+            </div>
+            <br>
+            <div class="tooltip"><span id="info_major_realm_bottleneck"></span></div>
+          </div>
+
+          <div>
+            <h3>Mental State</h3>
+            <div class="tooltip">Psyche: <span id="info_psyche">Tranquil (100)</span>
+              <span class="tooltiptext">Your mental state, Which decreases every year by between 15 and 60 days worth of cultivating it, so it's recommended to spend at least 30 days a year meditating. Your mental state is important, influencing your chances of breakthrough and qi, which then also influences many other aspects of the game.</span>
+            </div>
+            <br>
+          </div>
+
+          <div>
+            <h3>Fate Attributes</h3>
+            <div class="tooltip">Body: <span id="info_body_fate">Ordinary (3)</span>
+              <span class="tooltiptext">Your body's fate attribute, which is very important because it influences the speed of body cultivation.</span>
+            </div>
+            <br>
+            <div class="tooltip">Comprehension: <span id="info_comprehension_fate">Ordinary (3)</span>
+              <span class="tooltiptext">Your comprehension fate attribute, which is very important because it influences the speed of comprehending cultivation techniques.</span>
+            </div>
+            <br>
+            <div class="tooltip">Psyche: <span id="info_psyche_fate">Ordinary (3)</span>
+              <span class="tooltiptext">Your psyche's fate attribute, which is very important because it influences the speed and effectiveness of meditation.</span>
+            </div>
+            <br>
+            <div class="tooltip">Charm: <span id="info_charm_fate">Ordinary (3)</span>
+              <span class="tooltiptext">Your charm's fate attribute, which affects how your character interacts with other characters and your speed at building relationships with others.</span>
+            </div>
+            <br>
+            <div class="tooltip">Potential: <span id="info_potential_fate">False (1)</span>
+              <span class="tooltiptext">Your potential, which is the result of your cultivation realm and cultivation technique. This stat is important, influencing your chances of breakthrough and qi, which then also influences many other aspects of the game.</span>
+            </div>
+            <br>
+          </div>
+        </div>
+      </div>
+        <div id="combat_section" style="display: none;">
+          <h3>Combat Arts</h3>
+          <p>Main Combat Art: <span id="info_combat_art">None</span></p>
+          <details class="flex_col">
+            <summary>Other Combat Arts</summary>
+            <p><span id="info_combat_art2">None</span></p>
+          </details>
+
+
+          <div id="talisman_section">
+            <h3>Talismans</h3>
+            <p>Talisman: <span id="info_talisman">None</span></p>
+            <details class="flex_col">
+              <summary>Owned Talismans</summary>
+              <p><span id="info_talisman2">None</span></p>
+            </details>
+          </div>
+        </div>
+
+    </div>
+
+    <div id="spatial_ring_menu1" onclick="toggle_spatial_ring_menu()">
+      <h3 style="font-size: 2.5vh; color: white;">Spatial Ring</h3>
+    </div>
+
+    <div id="spatial_ring_menu2" style="display: none;">
+        <br>
+        <span id="lesser_mind_settling_pill_display_count" style="font-size: 2.5vh;" class="tooltip"></span>
+        <span id="soul_protection_pill_display_count" style="font-size: 2.5vh;" class="tooltip"></span>
+        <span id="minor_foundation_enhancing_pill_display_count" style="font-size: 2.5vh;" class="tooltip"></span>
+        <span id="awakening_meridian_pill_display_count" style="font-size: 2.5vh;" class="tooltip"></span>
+        <span id="meridian_bottleneck_pill_display_count" style="font-size: 2.5vh;" class="tooltip"></span>
+        <span id="lesser_spirit_leaf_display_count" style="font-size: 2.5vh;" class="tooltip"></span>
+        <span id="lesser_soul_ash_display_count" style="font-size: 2.5vh;" class="tooltip"></span>
+        <span id="wailshade_tear_display_count" style="font-size: 2.5vh;" class="tooltip"></span>
+        <span id="whispering_bone_display_count" style="font-size: 2.5vh;" class="tooltip"></span>
+        <span id="remnant_will_display_count" style="font-size: 2.5vh;" class="tooltip"></span>
+        <span id="ashblood_powder_display_count" style="font-size: 2.5vh;" class="tooltip"></span>
+        <span id="dull_dragon_pearl_display_count" style="font-size: 2.5vh;" class="tooltip"></span>
+        <span id="hollow_ember_display_count" style="font-size: 2.5vh;" class="tooltip"></span>
+        <span id="smoldering_dragon_scale_display_count" style="font-size: 2.5vh;" class="tooltip"></span>
+        <span id="remnant_dragon_trueblood_display_count" style="font-size: 2.5vh;" class="tooltip"></span>
+        <span id="crackling_crystal_display_count" style="font-size: 2.5vh;" class="tooltip"></span>
+        <span id="charged_bone_display_count" style="font-size: 2.5vh;" class="tooltip"></span>
+        <span id="thunderleaf_display_count" style="font-size: 2.5vh;" class="tooltip"></span>
+        <span id="spirit_leaf_display_count" style="font-size: 2.5vh;" class="tooltip"></span>
+        <span id="soul_ash_display_count" style="font-size: 2.5vh;" class="tooltip"></span>
+        <span id="corrupted_blossom_lotus_display_count" style="font-size: 2.5vh;" class="tooltip"></span>
+        <span id="ashen_bone_fragments_display_count" style="font-size: 2.5vh;" class="tooltip"></span>
+        <span id="soulbound_shackles_display_count" style="font-size: 2.5vh;" class="tooltip"></span>
+        <span id="translucent_scale_display_count" style="font-size: 2.5vh;" class="tooltip"></span>
+        <span id="soulweb_silk_display_count" style="font-size: 2.5vh;" class="tooltip"></span>
+    </div>
+    
+    <div id="cultivation_chamber_menu1" onclick="toggle_cultivation_chamber_menu()">
+      <h3 style="font-size: 2.5vh; color: white;">Cultivation Chamber</h3>
+    </div>
+    
+    <div id="cultivation_chamber_menu2" style="display: none;">
+      <h2>Cultivation Chamber</h2>
+      <div>
+        <div id="cultivation_menu2">
+          <p style="font-size: 2.5vh;">Realm: <span id="cultivation_realm_display">Low Foundation Forming</span></p>
+          <p style="font-size: 2.5vh;">Cultivation Progress: <span id="cultivation_progress">0%</span></p>
+          <p style="font-size: 2.5vh;">Days Left: <span id="days_left_display">365</span></p>
+      
+          <label for="day_input">Days to cultivate:</label>
+          <input type="number" id="day_input" value="1" min="1" max="365" style="width: 60px;" />
+          <br><br>
+          <button onclick="doCultivation()" class="adder_buttons">Cultivate</button>
+          <br><br>
+        </div>
+      
+        <div id="technique_menu2">
+          <p style="font-size: 2.5vh;">Cultivation Technique: <span id="technique_name">None</span></p>
+          <p style="font-size: 2.5vh;">Cultivation Technique Level: <span id="technique_level">1</span></p>
+          <p style="font-size: 2.5vh;">Cultivation Technique Mastery: <span id="technique_progress">0/0</span></p>
+      
+          <label for="day_input2">Days to learn technique:</label>
+          <input type="number" id="day_input2" value="1" min="1" max="365" style="width: 60px;" />
+          <br><br>
+          <button onclick="learn_technique()" class="adder_buttons">Learn</button>
+          <br><br>
+        </div>
+      
+        <div id="meditation_menu2">
+          <p style="font-size: 2.5vh;">Psyche: <span id="mental_state_display">Tranquil (100)</span></p>
+      
+          <label for="day_input3">Days to meditate:</label>
+          <input type="number" id="day_input3" value="1" min="1" max="365" style="width: 60px;" />
+          <br><br>
+          <button onclick="meditate()" class="adder_buttons">Meditate</button>
+          <br><br>
+        </div>
+
+        <div id="body_menu2">
+          <br>
+          <p style="font-size: 2.5vh;">Strength: <span id="strength_value"></span></p>
+          <p style="font-size: 2.5vh;">Resilience: <span id="resilience_value"></span></p>
+          <p style="font-size: 2.5vh;">Vitality: <span id="vitality_value"></span></p>
+          <br><br>
+          <button class="adder_buttons" onclick="train_strength()">Train Strength (5 days)</button>
+          <button class="adder_buttons" onclick="train_resilience()">Train Resilience (5 days)</button>
+          <button class="adder_buttons" onclick="train_vitality()">Train Vitality (5 days)</button>
+          <br><br>
+          <p style="font-size: 2.5vh;">Health: <span id="health_value1"></span></p>
+          <br><br>
+          <button class="normal_buttons" onclick="rest()">Rest (5 days, restores to max health)</button>
+          <br><br>
+        </div>
+      </div>
+    </div>
+
+
+    
+
+    <div id="world_menu1" onclick="toggle_world_menu()">
+      <h3 style="font-size: 2.5vh; color: white;">World</h3>
+    </div>
+
+    <div id="world_menu2" style="display: none;">
+      <h2>World Menu</h2>
+      <button style="color: rgb(255, 207, 119); background-color: transparent;" onclick="toggle_1st_valley_menu()"><h2>1st Valley Areas</h2></button>
+      <button style="color: rgb(255, 207, 119); background-color: transparent;" onclick="toggle_relationships_menu()"><h2>Relationships</h2></button>
+      <div>
+    
+        <div id="sect_world_menu" style="align-items: center; justify-content: center;">
+          <h3>Sect</h3>
+          <p style="font-size: 2.5vh;">Sect: <span id="sect_name">None</span></p>
+          <p style="font-size: 2.5vh;">Sect Points: <span id="sect_points">1</span></p>
+          <button class="adder_buttons" style="font-size: 2.5vh;" id="start_mission_btn" onclick="startMission()">Start A Sect Mission</button>
+          <button class="adder_buttons" style="font-size: 2.5vh;" id="complete_mission_btn" style="display: none;" onclick="completeMission()">Complete Sect Mission</button>
+          <p style="font-size: 2.5vh;" id="sect_task_description"></p>
+          <p style="font-size: 2.5vh" id="amount_for_task"></p>
+          <p style="font-size: 2.5vh" id='display4'></p>
+          <br>
+          <button class="normal_buttons" onclick="doSectTask(1, 30)" id="sect_task1">30 days <br> 1 Sect Point</button>
+          <br><br>
+          <button class="normal_buttons" onclick="doSectTask(2, 15)" id="sect_task2" style="display: none;">15 days <br> 2 Sect Points</button>
+          <br><br>
+        </div>
+    
+        <div id="shop_menu">
+          <h3>Sect Market</h3>
+          <div id="shop_menu_items">
+            <span class="adder_buttons" onclick="shop_item_display('Lesser Mind-Settling Pill')" id="lesser_mind_settling_pill_display" class="adder_buttons">Lesser Mind-Settling Pill <br></span>
+            <span class="adder_buttons" onclick="shop_item_display('Minor Dragon Empowering Talisman')" id="minor_dragon_empowering_talisman_display" class="adder_buttons">Minor Dragon Empowering Talisman <br></span>
+            <span class="adder_buttons" onclick="shop_item_display('Remnant Trueblood Vitality Talisman')" id="remnant_trueblood_vitality_talisman_display" class="adder_buttons">Remnant Trueblood Vitality Talisman <br></span>
+            <span class="adder_buttons" onclick="shop_item_display('Minor Dragon Scale Protection Talisman')" id="minor_dragon_scale_protection_talisman_display" class="adder_buttons">Minor Dragon Scale Protection Talisman <br></span>
+            <span class="adder_buttons" onclick="shop_item_display('Cracked Crystalized Heart Talisman')" id="cracked_crystalized_heart_display" class="adder_buttons">Cracked Crystalized Heart Talisman <br></span>
+            <span class="adder_buttons" onclick="shop_item_display('Minor Earth Combat Art')" id="minor_earth_combat_art_display" class="adder_buttons">Minor Earth Combat Art <br></span>
+            <span class="adder_buttons" onclick="shop_item_display('Minor Water Combat Art')" id="minor_water_combat_art_display" class="adder_buttons">Minor Water Combat Art <br></span>
+            <span class="adder_buttons" onclick="shop_item_display('Minor Fire Combat Art')" id="minor_fire_combat_art_display" class="adder_buttons">Minor Fire Combat Art <br></span>
+            <span class="adder_buttons" onclick="shop_item_display('Minor Air Combat Art')" id="minor_air_combat_art_display" class="adder_buttons">Minor Air Combat Art <br></span>
+            <span class="adder_buttons" onclick="shop_item_display('Minor Metal Combat Art')" id="minor_metal_combat_art_display" class="adder_buttons">Minor Metal Combat Art <br></span>
+            <span class="adder_buttons" onclick="shop_item_display('Minor Wood Combat Art')" id="minor_wood_combat_art_display" class="adder_buttons">Minor Wood Combat Art <br></span>
+            <span class="adder_buttons" onclick="shop_item_display('Advanced Metal Combat Art')" id="advanced_metal_combat_art_display" class="adder_buttons">Advanced Metal Combat Art <br></span>
+          </div>
+          <div id="shop_menu_items_info"></div>
+        </div>
+    
+        <div id="alchemy_menu">
+          <h3>Alchemy</h3>
+          <div id="alchemy_menu_items">
+            <span class="adder_buttons" onclick="alchemy_item_display('Lesser Mind-Settling Pill')" id="lesser_mind_settling_pill_display_alc">Lesser Mind-Settling Pill <br></span>
+            <span class="adder_buttons" onclick="alchemy_item_display('Soul Protection Pill')" id="soul_protection_pill_display_alc">Soul Protection Pill <br></span>
+            <span class="adder_buttons" onclick="alchemy_item_display('Minor Foundation Enhancing Pill')" id="minor_foundation_enhancing_pill_display_alc">Minor Foundation Enhancing Pill <br></span>
+            <span class="adder_buttons" onclick="alchemy_item_display('Awakening Meridian Pill')" id="awakening_meridian_pill_display_alc">Awakening Meridian Pill <br></span>
+            <span class="adder_buttons" onclick="alchemy_item_display('Meridian Bottleneck Pill')" id="meridian_bottleneck_pill_display_alc">Meridian Bottleneck Pill <br></span>
+          </div>
+          <div id="alchemy_menu_items_info"></div>
+        </div>
+      </div>
+    </div>
+
+    <div id="first_valley_menu" style="display: none;">
+      <h3 style="color: white;">1st Valley Areas (drag to scroll)</h3>
+      <div id="first_valley_areas">
+        <div class="area_btns" onclick="go_to_spirit_garden()">Go To Spirit Garden (4 days)</div>
+        <div class="area_btns" onclick="go_to_outer_soul_valley()">Go To Outer Soul Valley (6 days, Low Foundation Forming min)</div>
+        <div class="area_btns" onclick="go_to_minor_ashen_hollowvein()">Go To Minor Ashen Hollowvein (3 days, Middle Foundation Forming min)</div>
+        <div class="area_btns" onclick="go_to_thunderhowl_plateau()">Go To Thunderhowl Plateau (7 days, High Foundation Forming min)</div>
+        <div class="area_btns" onclick="go_to_inner_soul_valley()" id="go_to_inner_soul_valley_button">Go To Inner Soul Valley (8 days, Low Meridian Awakening min)</div>
+      </div>
+      <button class="adder_buttons" onclick="toggle_1st_valley_menu()">Back</button>
+    </div>
+    
+    <div id="relationships_menu" style="display: none;">
+      <h2 style="color: white;">Relationships</h2>
+      <div id="relationships">
+        <div class="relationship_div" id="wu_lixia">
+          <br>
+          <h2 style="font-size: 3vh;">Wu Lixia</h2>
+          <p style="font-size: 2.5vh;">Wu Lixia is a girl who entered the four heavenly valleys sect at the same time as you, making you fellow sect members.</p>
+          <br>
+          <details>
+            <summary style="font-size: 3vh; font-weight: bold;">Stats</summary>
+            <p style="font-size: 2.5vh;">Age: <span id="wu_lixia_age"></span></p>
+            <p style="font-size: 2.5vh;">Gender: <span id="wu_lixia_gender"></span></p>
+            <p style="font-size: 2.5vh;">Health: <span id="wu_lixia_health"></span></p>
+            <p style="font-size: 2.5vh;">Attack: <span id="wu_lixia_attack"></span></p>
+            <p style="font-size: 2.5vh;">Defense: <span id="wu_lixia_defense"></span></p>
+            <p style="font-size: 2.5vh;">Strength: <span id="wu_lixia_strength"></span></p>
+            <p style="font-size: 2.5vh;">Resilience: <span id="wu_lixia_resilience"></span></p>
+            <p style="font-size: 2.5vh;">Vitality: <span id="wu_lixia_vitality"></span></p>
+            <p style="font-size: 2.5vh;">Realm: <span id="wu_lixia_realm"></span></p>
+            <p style="font-size: 2.5vh;">Qi: <span id="wu_lixia_qi"></span></p>
+            <p style="font-size: 2.5vh;">Cultivation Progress: <span id="wu_lixia_cultivation_progress"></span></p>
+            <p style="font-size: 2.5vh;">Combat Art: <span id="wu_lixia_combat_art"></span></p>
+          </details>
+        </div>
+        <div class="relationship_div" id="ma_hao">
+          <br>
+          <h2 style="font-size: 3vh;">Ma Hao</h2>
+          <p style="font-size: 2.5vh;">Ma Hao is a boy who entered the four heavenly valleys sect at the same time as you, making you fellow sect members.</p>
+          <br>
+        </div>
+        <div class="relationship_div" id="jiang_haoran">
+          <br>
+          <h2 style="font-size: 3vh;">Jiang Haoran</h2>
+          <p style="font-size: 2.5vh;">Jiang Haoran is one of the 1st valleys elders, and oversees the financial aspect of the 1st valley including the collection of sect points every year.</p>
+        </div>
+      </div>
+      <button class="adder_buttons" onclick="toggle_relationships_menu()">Back</button>
+    </div>
+
+    <div id="continue_button" ondblclick="continue_game()" style="display: none;">
+      <h3 style="font-size: 2.5vh; color: white;">Advance Year (dbl click)</h3>
+    </div>
+  </div>
+
+
+  
+<script src="script.js"></script>
+
+</body>
+</html>

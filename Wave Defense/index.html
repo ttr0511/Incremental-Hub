@@ -1,0 +1,967 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Tower Defense Game</title>
+  <style>
+
+@font-face {
+  font-family: 'Winky Rough';
+  src: url('fonts/WinkyRough-Regular.ttf') format('truetype');
+  font-weight: normal;
+  font-style: normal;
+}
+    body {
+      font-family: 'Winky Rough', sans-serif;
+      display: flex;
+      flex-direction: row;
+      width: 100%;
+      height: 100vh;
+      margin: 0;
+      padding: 0;
+      background-color: black;
+      user-select: none;
+    }
+
+    #gameCanvas {
+      flex: 1;
+    }
+
+    #menu, #gold_menu, #right_menu {
+      width: 50%;
+      background-color: black;
+      color: white;
+      border-left: 2px solid #f4f4f4;
+      display: flex;
+      flex-direction: column;
+      box-shadow: 0 0 3px #f4f4f4;
+    }
+
+    #right_menu {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+
+    /* Top 80% of menu with tabs */
+    #menuTabs {
+      flex: 8;
+      display: flex;
+      flex-direction: column;
+      padding: 10px;
+    }
+
+    .tab-header {
+      display: flex;
+      justify-content: space-around;
+      border-bottom: 1px solid #666;
+      margin-bottom: 10px;
+    }
+
+    .tab-header h3 {
+      flex: 1;
+      margin: 0;
+      padding: 10px;
+      text-align: center;
+      background-color: #333;
+      cursor: pointer;
+      user-select: none;
+    }
+
+    .tab-header h3:hover {
+      background-color: #444;
+    }
+
+    .tab-header h3.active {
+      background-color: #555;
+    }
+
+    .tab-content {
+      flex: 1;
+      display: none;
+    }
+
+    .tab-content.active {
+      display: block;
+    }
+
+    /* Bottom 20% of menu */
+    #menuInfo {
+      flex: 1;
+      padding: 10px;
+      background-color: #222;
+    }
+
+    #menuInfo div {
+      margin-bottom: 10px;
+    }
+
+    /* Container to hold the upgrades in 3 columns */
+.upgrade-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+}
+
+/* Individual upgrade button */
+.upgrade_button {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background-color: black;
+  border: 2px solid white;
+  box-shadow: 0 0 10px white;
+  padding: 10px;
+  border-radius: 8px;
+  color: white;
+  height: 60px;
+}
+
+/* Upgrade name on the left */
+.upgrade_name {
+  flex: 1;
+  font-weight: bold;
+}
+
+/* Stat and cost container */
+.upgrade_info {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+}
+
+/* Stat value */
+.upgrade_stat {
+  font-size: 16px;
+}
+
+/* Cost box */
+.upgrade_cost {
+  font-size: 12px;
+  background-color: #333;
+  padding: 2px 6px;
+  border-radius: 4px;
+  margin-top: 4px;
+  cursor: pointer;
+}
+
+#opening_menu {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.normal_header {
+    margin-top: 4vh;
+    color: white;
+    font-family: 'Winky Rough', sans-serif;
+}
+
+.adder_buttons {
+    font-size: 30px;
+    color: white;
+    background-color: black;
+    border: 2px solid white;
+    padding: 10px;
+    border-radius: 8px;
+    cursor: pointer;
+}
+
+  </style>
+</head>
+<body>
+<div id="opening_menu">
+    <h1 class="normal_header" style="color: rgb(255, 207, 119); font-size: 5vh">Wave Defense</h1>
+    <br><br><br><br>
+    <button class="adder_buttons" style="font-size: 30px;" onclick="play()">Play</button>
+</div>
+<canvas id="gameCanvas" style='display: none;'></canvas>
+
+<div id="menu" style='display: none;'>
+  <div id="menuTabs">
+    <div class="tab-header">
+      <h3 class="tab-button active" onclick="showTab('attack')">Attack</h3>
+      <h3 class="tab-button" onclick="showTab('defense')">Defense</h3>
+    </div>
+    <div id="attackContent" class="tab-content active">
+      <div class="upgrade-grid">
+        <div id="cash_damage_upgrade_btn" class="upgrade_button">
+          <div class="upgrade_name">Damage</div>
+          <div class="upgrade_info">
+            <div class="upgrade_stat" id="cash_damage_stat">1</div>
+            <div class="upgrade_cost" id="cash_damage_upgrade_cost" onclick="attackUpgrades('damage')">Cost: $10</div>
+          </div>
+        </div>
+        <div id="cash_fire_rate_upgrade_btn" class="upgrade_button">
+          <div class="upgrade_name">Fire Rate</div>
+          <div class="upgrade_info">
+            <div class="upgrade_stat" id="cash_fire_rate_stat">1.5s</div>
+            <div class="upgrade_cost" id="cash_fire_rate_upgrade_cost" onclick="attackUpgrades('fire_rate')">Cost: $15</div>
+          </div>
+        </div>
+        <!-- Add more upgrades as needed -->
+      </div>
+    </div>
+    
+    <div id="defenseContent" class="tab-content">
+      <!-- Defense tab content here -->
+      <div class="upgrade-grid">
+        <div id="cash_health_upgrade_btn" class="upgrade_button">
+          <div class="upgrade_name">Health</div>
+          <div class="upgrade_info">
+            <div class="upgrade_stat" id="cash_health_stat">1</div>
+            <div class="upgrade_cost" id="cash_health_upgrade_cost" onclick="defenseUpgrades('health')">Cost: $10</div>
+          </div>
+        </div>
+        <div id="cash_abs_defense_upgrade_btn" class="upgrade_button">
+          <div class="upgrade_name">Absolute Defense</div>
+          <div class="upgrade_info">
+            <div class="upgrade_stat" id="cash_abs_defense_stat">1</div>
+            <div class="upgrade_cost" id="cash_abs_defense_upgrade_cost" onclick="defenseUpgrades('absolute_defense')">Cost: $15</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Bottom section for constant info -->
+  <div id="menuInfo">
+    <div>Wave: <span id="wave">1</span></div>
+    <div><img src="images/damage.png" width="20" height="20" /> <span id="damage">1</span></div>
+    <div>cash: <span id="cash">0</span></div>
+    <div>Level: <span id="level">1</span></div>
+    <div><img src="images/heart.png" width="20" height="20" /><span id="health">10</span></div>
+    <div>Normal Enemy: <img src="images/heart.png" width="20" height="20" /> <span id="normalHealth">1.00</span>, <img src="images/damage.png" width="20" height="20" /> <span id="normalDamage">1.00</span></div>
+    <div>Tank Enemy: <img src="images/heart.png" width="20" height="20" /> <span id="tankHealth">2.00</span>, <img src="images/damage.png" width="20" height="20" /> <span id="tankDamage">2.00</span></div>
+  </div>
+</div>
+
+<div id="gold_menu" style="display: none;">
+  <div id="menuTabs">
+    <div class="tab-header">
+      <h3 class="tab-button active" onclick="showTab('attack')">Attack</h3>
+      <h3 class="tab-button" onclick="showTab('defense')">Defense</h3>
+    </div>
+    <div id="attackContent2" class="tab-content active">
+      <div class="upgrade-grid">
+        <div id="gold_damage_upgrade_btn" class="upgrade_button">
+          <div class="upgrade_name">Damage</div>
+          <div class="upgrade_info">
+            <div class="upgrade_stat" id="gold_damage_stat">1</div>
+            <div class="upgrade_cost" id="gold_damage_upgrade_cost" onclick="attackGoldUpgrades('damage')">Cost: 10 G</div>
+          </div>
+        </div>
+        <div id="gold_fire_rate_upgrade_btn" class="upgrade_button">
+          <div class="upgrade_name">Fire Rate</div>
+          <div class="upgrade_info">
+            <div class="upgrade_stat" id="gold_fire_rate_stat">1.5s</div>
+            <div class="upgrade_cost" id="gold_fire_rate_upgrade_cost" onclick="attackGoldUpgrades('fire_rate')">Cost: 15 G</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <div id="defenseContent2" class="tab-content">
+      <!-- Defense tab content here -->
+      <div class="upgrade-grid">
+        <div id="gold_health_upgrade_btn" class="upgrade_button">
+          <div class="upgrade_name">Health</div>
+          <div class="upgrade_info">
+            <div class="upgrade_stat" id="gold_health_stat">1</div>
+            <div class="upgrade_cost" id="gold_health_upgrade_cost" onclick="defenseGoldUpgrades('health')">Cost: 10 G</div>
+          </div>
+        </div>
+        <div id="gold_abs_defense_upgrade_btn" class="upgrade_button">
+          <div class="upgrade_name">Absolute Defense</div>
+          <div class="upgrade_info">
+            <div class="upgrade_stat" id="gold_abs_defense_stat">1</div>
+            <div class="upgrade_cost" id="gold_abs_defense_upgrade_cost" onclick="defenseGoldUpgrades('absolute_defense')">Cost: 15 G</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<div id="right_menu" style="display: none;">
+  <button onclick="pauseGame()" class="upgrade_button" style="background-color: #222;">Start</button>
+  <p>Gold: <span id="gold">0</span></p>
+</div>
+
+
+
+<script>
+let doneSpawning = false;
+function convert(num) {
+  if (num < 1000) {
+    return num.toString();
+  }
+  else {
+    const suffixes = ["K", "M", "B", "T", "Qa", "Qn", "Sx", "Sp", "Oc", "No", "Dc"]
+    let suffixIndex = Math.floor(Math.log10(num) / 3) - 1;
+    let value = num / Math.pow(1000,suffixIndex + 1);
+    return value.toFixed(2) + suffixes[suffixIndex];
+  }
+}
+function showTab(tabName) {
+  const attackContent = document.getElementById('attackContent');
+  const defenseContent = document.getElementById('defenseContent');
+  const attackTab = document.querySelector('.tab-button:nth-child(1)');
+  const defenseTab = document.querySelector('.tab-button:nth-child(2)');
+  const attackContent2 = document.getElementById('attackContent2');
+  const defenseContent2 = document.getElementById('defenseContent2');
+  const attackTab2 = document.querySelector('.tab-button:nth-child(1)');
+  const defenseTab2 = document.querySelector('.tab-button:nth-child(2)');
+
+  if (tabName === 'attack') {
+    attackContent.classList.add('active');
+    defenseContent.classList.remove('active');
+    attackTab.classList.add('active');
+    defenseTab.classList.remove('active');
+    attackContent2.classList.add('active');
+    defenseContent2.classList.remove('active');
+    attackTab2.classList.add('active');
+    defenseTab2.classList.remove('active');
+  } else {
+    attackContent.classList.remove('active');
+    defenseContent.classList.add('active');
+    attackTab.classList.remove('active');
+    defenseTab.classList.add('active');
+    attackContent2.classList.remove('active');
+    defenseContent2.classList.add('active');
+    attackTab2.classList.remove('active');
+    defenseTab2.classList.add('active');
+  }
+}
+
+const vw = Math.max(document.documentElement.clientWidth || 0, window.innerWidth || 0)
+const vh = Math.max(document.documentElement.clientHeight || 0, window.innerHeight || 0)
+
+const canvas = document.getElementById("gameCanvas");
+const ctx = canvas.getContext("2d");
+
+
+
+// Set both resolution and visual size
+const size = Math.min(window.innerWidth, window.innerHeight);
+canvas.width = size;
+canvas.height = size;
+
+// Optional: prevent canvas from being resized by CSS
+canvas.style.width = size + "px";
+canvas.style.height = size + "px";
+
+
+let baseTower = {
+  radius: 20,
+  maxHp: 10,
+  hp: 10,
+  damage: 1,
+  fireRate: 1500,
+  absoluteDefense: 0,
+  regenRate: 0.05
+}
+
+let tower = {
+  x: canvas.width / 2,
+  y: canvas.height / 2,
+  radius: 20,
+  maxHp: 10,
+  hp: 10,
+  damage: 1,
+  fireRate: 1500,
+  absoluteDefense: 0,
+  regenRate: 0.05
+};
+
+let cash = 0;
+let gold = 0;
+let level = 1;
+let wave = 1;
+let gameSpeed = 1;
+let lastFireTime = 0;
+let gamePaused = true;
+let upgrades = {
+  up1cost: 10,
+  up2cost: 15,
+  up3cost: 15,
+  up4cost: 15,
+}
+
+let goldUpgrades = {
+  up1cost: 10,
+  up2cost: 15,
+  up3cost: 15,
+  up4cost: 15,
+}
+
+let bullets = [];
+let enemies = [];
+let startingEnemyStats = {
+    hp1: 1, 
+    damage1: 1,
+    speed1: 1,
+    reward1: 2,
+
+    hp2: 2,
+    damage2: 2,
+    speed2: 0.5,
+    reward2: 5
+}
+let normalEnemyStats = { 
+    hp: 1, 
+    damage: 1,
+    speed: 1,
+    reward: 2
+};
+let tankEnemyStats = { 
+    hp: 2, 
+    damage: 2,
+    speed: 0.5,
+    reward: 5
+};
+
+
+
+function updateMenu() {
+  document.getElementById('wave').innerText = wave;
+  document.getElementById('health').innerText = convert(tower.hp) + "/" + convert(tower.maxHp);
+  document.getElementById('damage').innerText = convert(tower.damage);
+  document.getElementById('cash').innerText = convert(cash);
+  document.getElementById('level').innerText = level;
+  document.getElementById('normalHealth').innerText = convert(Math.round(normalEnemyStats.hp * 100) / 100);
+  document.getElementById('normalDamage').innerText = convert(Math.round(normalEnemyStats.damage * 100) / 100);
+  document.getElementById('tankHealth').innerText = convert(Math.round(tankEnemyStats.hp * 100) / 100);
+  document.getElementById('tankDamage').innerText = convert(Math.round(tankEnemyStats.damage * 100) / 100);
+}
+
+function spawnEnemies() {
+  const enemyCount = Math.min(25, wave);
+  doneSpawning = false;
+  if (wave % 10 === 0) {
+    let x, y;
+      const edge = Math.floor(Math.random() * 4); // 0=top, 1=right, 2=bottom, 3=left
+
+      switch (edge) {
+      case 0: // top
+          x = Math.random() * canvas.width;
+          y = 0;
+          break;
+      case 1: // right
+          x = canvas.width;
+          y = Math.random() * canvas.height;
+          break;
+      case 2: // bottom
+          x = Math.random() * canvas.width;
+          y = canvas.height;
+          break;
+      case 3: // left
+          x = 0;
+          y = Math.random() * canvas.height;
+          break;
+      }
+      const enemy = {
+        type: 'tank',
+        x: x,
+        y: y,
+        speed: tankEnemyStats.speed / 2,
+        damage: tankEnemyStats.hp * 5 * (wave / 10),
+        radius: 20,
+        hp: tankEnemyStats.hp * 5 * (wave / 10),
+        reward: tankEnemyStats.reward * 2,
+      };
+      enemies.push(enemy);
+  }
+  for (let i = 0; i < enemyCount; i++) {
+    setTimeout(function() {
+      const type = (wave > 5 && Math.random() < 0.5) ? 'tank' : 'normal';
+      let x, y;
+      const edge = Math.floor(Math.random() * 4); // 0=top, 1=right, 2=bottom, 3=left
+
+      switch (edge) {
+      case 0: // top
+          x = Math.random() * canvas.width;
+          y = 0;
+          break;
+      case 1: // right
+          x = canvas.width;
+          y = Math.random() * canvas.height;
+          break;
+      case 2: // bottom
+          x = Math.random() * canvas.width;
+          y = canvas.height;
+          break;
+      case 3: // left
+          x = 0;
+          y = Math.random() * canvas.height;
+          break;
+      }
+
+      const enemy = {
+        type: type,
+        x: x,
+        y: y,
+        speed: type === 'normal' ? normalEnemyStats.speed : tankEnemyStats.speed,
+        damage: type === 'normal' ? normalEnemyStats.damage : tankEnemyStats.damage,
+        radius: 10,
+        hp: type === 'normal' ? normalEnemyStats.hp : tankEnemyStats.hp,
+        reward: type === 'normal' ? normalEnemyStats.reward : tankEnemyStats.reward,
+      };
+
+      enemies.push(enemy);
+      
+      // Set doneSpawning to true after the last enemy is actually spawned
+      if (i === enemyCount - 1) {
+        doneSpawning = true;
+      }
+    }, (1000 * (i + 1)) / gameSpeed)
+  }
+}
+
+function increaseDifficulty() {
+  const incrementSmall = 1.025;
+  console.log(incrementSmall)
+  const incrementLarge = 1.10;
+
+  if (wave % 2 === 0) {
+    normalEnemyStats.hp *= incrementSmall;
+    normalEnemyStats.damage *= incrementSmall;
+    tankEnemyStats.hp *= incrementSmall;
+    tankEnemyStats.damage *= incrementSmall;
+    normalEnemyStats.hp = Math.round(normalEnemyStats.hp * 100) / 100;
+    normalEnemyStats.damage = Math.round(normalEnemyStats.damage * 100) / 100;
+    tankEnemyStats.hp = Math.round(tankEnemyStats.hp * 100) / 100;
+    tankEnemyStats.damage = Math.round(tankEnemyStats.damage * 100) / 100;
+  }
+
+  if (wave % 5 === 0) {
+    normalEnemyStats.hp *= incrementLarge;
+    normalEnemyStats.damage *= incrementLarge;
+    tankEnemyStats.hp *= incrementLarge;
+    tankEnemyStats.damage *= incrementLarge;
+    normalEnemyStats.hp = Math.round(normalEnemyStats.hp * 100) / 100;
+    normalEnemyStats.damage = Math.round(normalEnemyStats.damage * 100) / 100;
+    tankEnemyStats.hp = Math.round(tankEnemyStats.hp * 100) / 100;
+    tankEnemyStats.damage = Math.round(tankEnemyStats.damage * 100) / 100;
+  }
+}
+
+function drawTower() {
+  
+  ctx.beginPath();
+  for (let i = 0; i < 6; i++) {
+    const angle = (i / 6) * Math.PI * 2;
+    const x = tower.x + tower.radius * Math.cos(angle);
+    const y = tower.y + tower.radius * Math.sin(angle);
+    if (i === 0) {
+      ctx.moveTo(x, y);
+    } else {
+      ctx.lineTo(x, y);
+    }
+  }
+  ctx.closePath();
+  ctx.lineWidth = 3;
+  ctx.strokeStyle = "rgba(0, 255, 0, 0.5)";
+  ctx.stroke();
+
+  ctx.shadowColor = "rgba(0, 255, 0, 1)";
+  ctx.shadowBlur = 15;
+  ctx.strokeStyle = "white";
+  ctx.stroke();
+  ctx.shadowColor = "unset";
+  ctx.shadowBlur = 0;
+}
+
+
+
+function drawEnemies() {
+  enemies.forEach(enemy => {
+    ctx.beginPath();
+    ctx.rect(
+      enemy.x - enemy.radius,
+      enemy.y - enemy.radius,
+      enemy.radius * 2,
+      enemy.radius * 2
+    );
+
+    // Set red glow (shadow)
+    ctx.shadowColor = "rgba(255, 0, 0, 1)";
+    ctx.shadowBlur = 15;
+
+    // Draw colored enemy with red glow
+    ctx.strokeStyle = enemy.type === 'normal' ? "blue" : "purple";
+    ctx.lineWidth = 2;
+    ctx.stroke();
+
+    // Reset shadow after drawing
+    ctx.shadowColor = "transparent";
+    ctx.shadowBlur = 0;
+
+    ctx.closePath();
+  });
+}
+
+function drawBullets() {
+  bullets.forEach(bullet => {
+    ctx.beginPath();
+    ctx.arc(bullet.x, bullet.y, 5, 0, Math.PI * 2);
+    ctx.fillStyle = "red";
+    ctx.fill();
+    ctx.closePath();
+  });
+}
+
+function moveEnemies() {
+  enemies.forEach((enemy, index) => {
+    const dx = tower.x - enemy.x;
+    const dy = tower.y - enemy.y;
+    const angle = Math.atan2(dy, dx);
+    enemy.x += Math.cos(angle) * (enemy.speed * gameSpeed);
+    enemy.y += Math.sin(angle) * (enemy.speed * gameSpeed);
+
+    const distanceToTower = Math.sqrt(dx ** 2 + dy ** 2);
+    if (distanceToTower < tower.radius) {
+      if (enemy.damage > tower.absoluteDefense) {
+        tower.hp -= enemy.damage - tower.absoluteDefense;
+      }
+
+      enemies.splice(index, 1);
+    }
+  });
+}
+
+function moveBullets() {
+  bullets.forEach((bullet, bulletIndex) => {
+    bullet.x += bullet.dx * gameSpeed;
+    bullet.y += bullet.dy * gameSpeed;
+
+    // Check collision with enemies
+    enemies.forEach((enemy, enemyIndex) => {
+      const dx = bullet.x - enemy.x;
+      const dy = bullet.y - enemy.y;
+      const distance = Math.sqrt(dx ** 2 + dy ** 2);
+      if (distance < bullet.radius + enemy.radius) {
+        enemy.hp -= tower.damage;
+        bullets.splice(bulletIndex, 1);
+        if (enemy.hp <= 0) {
+          cash += enemy.reward;
+          enemies.splice(enemyIndex, 1);
+        }
+      }
+    });
+  });
+}
+
+function update() {
+  moveEnemies();
+  moveBullets();
+  updateMenu();
+}
+
+function draw() {
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  drawTower();
+  drawBullets();
+  drawEnemies();
+}
+
+let waitingForNextWave = false;
+
+
+function gameLoop() {
+  if (gamePaused) return;
+  const now = Date.now();
+
+  update();
+  draw();
+
+  if (tower.hp <= 0) {
+    pauseGame();
+    return;
+  }
+
+  // Fire bullet every fireRate interval
+  if (now - lastFireTime >= tower.fireRate / gameSpeed) {
+    lastFireTime = now;
+    const target = findNearestEnemy();
+    if (target) {
+      const dx = target.x - tower.x;
+      const dy = target.y - tower.y;
+      const angle = Math.atan2(dy, dx);
+      bullets.push({
+        x: tower.x,
+        y: tower.y,
+        dx: Math.cos(angle) * 5,
+        dy: Math.sin(angle) * 5,
+        radius: 5,
+      });
+    }
+  }
+
+  if (enemies.length === 0 && !waitingForNextWave && doneSpawning) {
+    wave++;
+    increaseDifficulty();
+    waitingForNextWave = true;
+    gold += 1;
+    setTimeout(() => {
+      spawnEnemies();
+      waitingForNextWave = false;
+    }, 2000);
+  }
+
+  requestAnimationFrame(gameLoop);
+}
+
+
+function findNearestEnemy() {
+  if (enemies.length === 0) return null;
+
+  let nearest = enemies[0];
+  let minDist = Math.hypot(nearest.x - tower.x, nearest.y - tower.y);
+
+  for (let i = 1; i < enemies.length; i++) {
+    const enemy = enemies[i];
+    const dist = Math.hypot(enemy.x - tower.x, enemy.y - tower.y);
+    if (dist < minDist) {
+      nearest = enemy;
+      minDist = dist;
+    }
+  }
+
+  return nearest;
+}
+
+
+function attackUpgrades(up_index) {
+  if (up_index == 'damage') {
+    if (cash >= upgrades.up1cost) {
+      cash -= upgrades.up1cost;
+      tower.damage *= 1.095;
+      upgrades.up1cost *= 1.10;
+      upgrades.up1cost = Math.round(upgrades.up1cost);
+      tower.damage = Math.round(tower.damage * 100) / 100;
+      updateDisplay();
+      updateMenu();
+    }
+    
+  }
+
+  if (up_index == 'fire_rate') {
+    if (cash >= upgrades.up2cost) {
+      cash -= upgrades.up2cost;
+      tower.fireRate /= 1.04;
+      upgrades.up2cost *= 1.10;
+      upgrades.up2cost = Math.round(upgrades.up2cost);
+      tower.fireRate = Math.round(tower.fireRate * 100) / 100;
+      updateDisplay();
+      updateMenu();
+    }
+    
+  }
+}
+
+function defenseUpgrades(up_index) {
+  if (up_index == 'health') {
+    if (cash >= upgrades.up3cost) {
+      cash -= upgrades.up3cost;
+      tower.hp += tower.maxHp * 0.1;
+      tower.maxHp *= 1.1;
+      upgrades.up3cost *= 1.10;
+      upgrades.up3cost = Math.round(upgrades.up3cost);
+      tower.maxHp = Math.round(tower.maxHp * 100) / 100;
+      tower.hp = Math.round(tower.hp * 100) / 100;
+      updateDisplay();
+      updateMenu();
+    }
+    
+  }
+  if (up_index == 'absolute_defense') {
+    if (cash >= upgrades.up4cost) {
+      cash -= upgrades.up4cost;
+      tower.absoluteDefense += 0.1;
+      upgrades.up4cost *= 1.10;
+      upgrades.up4cost = Math.round(upgrades.up4cost);
+      tower.absoluteDefense = Math.round(tower.absoluteDefense * 100) / 100;
+      updateDisplay();
+      updateMenu();
+    }
+    
+  }
+}
+
+function attackGoldUpgrades(up_index) {
+  if (up_index == 'damage') {
+    if (gold >= goldUpgrades.up1cost) {
+      gold -= goldUpgrades.up1cost;
+      baseTower.damage *= 1.095;
+      goldUpgrades.up1cost *= 1.10;
+      goldUpgrades.up1cost = Math.round(goldUpgrades.up1cost);
+      baseTower.damage = Math.round(baseTower.damage * 100) / 100;
+      updateDisplay();
+      updateMenu();
+    }
+  }
+  if (up_index == 'fire_rate') {
+    if (gold >= goldUpgrades.up2cost) {
+      gold -= goldUpgrades.up2cost;
+      baseTower.fireRate /= 1.04;
+      goldUpgrades.up2cost *= 1.10;
+      goldUpgrades.up2cost = Math.round(goldUpgrades.up2cost);
+      baseTower.fireRate = Math.round(baseTower.fireRate * 100) / 100;
+      updateDisplay();
+      updateMenu();
+    }
+  }
+}
+
+function defenseGoldUpgrades(up_index) {
+  if (up_index == 'health') {
+    if (gold >= goldUpgrades.up3cost) {
+      gold -= goldUpgrades.up3cost;
+      baseTower.maxHp *= 1.10;
+      baseTower.maxHp = Math.round(baseTower.maxHp * 100) / 100;
+      baseTower.hp = baseTower.maxHp;
+      goldUpgrades.up3cost *= 1.10;
+      goldUpgrades.up3cost = Math.round(goldUpgrades.up3cost);
+    
+      updateDisplay();
+      updateMenu();
+    }
+  }
+  if (up_index == 'absolute_defense') {
+    if (gold >= goldUpgrades.up4cost) {
+      gold -= goldUpgrades.up4cost;
+      baseTower.absoluteDefense += 0.1;
+      goldUpgrades.up4cost *= 1.10;
+      goldUpgrades.up4cost = Math.round(goldUpgrades.up4cost);
+      baseTower.absoluteDefense = Math.round(baseTower.absoluteDefense * 100) / 100;
+      updateDisplay();
+      updateMenu();
+    }
+  }
+}
+
+function updateDisplay() {
+  document.getElementById("cash_damage_upgrade_cost").innerText = "$" + convert(upgrades.up1cost);
+  document.getElementById("cash_fire_rate_upgrade_cost").innerText = "$" + convert(upgrades.up2cost);
+  document.getElementById("cash_damage_stat").innerText = convert(tower.damage);
+  document.getElementById("cash_fire_rate_stat").innerText = Math.round((1500 / tower.fireRate) * 100) / 100;
+  document.getElementById("cash_health_upgrade_cost").innerText = "$" + convert(upgrades.up3cost);
+  document.getElementById("cash_abs_defense_upgrade_cost").innerText = "$" + convert(upgrades.up4cost);
+  document.getElementById("cash_health_stat").innerText = convert(tower.hp) + "/" + convert(tower.maxHp);
+  document.getElementById("cash_abs_defense_stat").innerText = convert(tower.absoluteDefense);
+
+
+  document.getElementById("gold").innerText = convert(gold);
+  document.getElementById("gold_damage_upgrade_cost").innerText = convert(goldUpgrades.up1cost) + ' G';
+  document.getElementById("gold_fire_rate_upgrade_cost").innerText = convert(goldUpgrades.up2cost) + ' G';
+  document.getElementById("gold_damage_stat").innerText = convert(baseTower.damage);
+  document.getElementById("gold_fire_rate_stat").innerText = Math.round((1500 / baseTower.fireRate) * 100) / 100;
+  document.getElementById("gold_health_upgrade_cost").innerText = convert(goldUpgrades.up3cost) + ' G';
+  document.getElementById("gold_abs_defense_upgrade_cost").innerText = convert(goldUpgrades.up4cost) + ' G';
+  document.getElementById("gold_health_stat").innerText = convert(baseTower.hp) + "/" + convert(baseTower.maxHp);
+  document.getElementById("gold_abs_defense_stat").innerText = convert(baseTower.absoluteDefense);
+}
+
+
+function getUpgradeCost(baseCost, upgradeCount) {
+  const growthRate = 1.1;
+  return Math.floor(baseCost * Math.pow(growthRate, upgradeCount));
+}
+
+function regen() {
+  tower.hp += (tower.regenRate / 10) * gameSpeed;
+  tower.hp = Math.round(tower.hp * 1000) / 1000;
+  if (tower.hp > tower.maxHp) {
+    tower.hp = tower.maxHp;
+  }
+}
+
+function play() {
+  document.getElementById("opening_menu").style.display = "none";
+  document.getElementById("gold_menu").style.display = "flex";
+  document.getElementById("right_menu").style.display = "flex";
+}
+
+function pauseGame() {
+  gamePaused = !gamePaused;
+  if (!gamePaused) {
+    resetStats();
+    requestAnimationFrame(gameLoop);
+    spawnEnemies();
+    document.getElementById('gold_menu').style.display = "none";
+    document.getElementById('right_menu').style.display = "none";
+    document.getElementById('menu').style.display = "flex";
+    document.getElementById('gameCanvas').style.display = "block";
+  }
+  else {
+    document.getElementById('gold_menu').style.display = "flex";
+    document.getElementById('right_menu').style.display = "flex";
+    document.getElementById('menu').style.display = "none";
+    document.getElementById('gameCanvas').style.display = "none";
+  }
+}
+
+function resetStats() {
+  tower = {
+    x: canvas.width / 2,
+    y: canvas.height / 2,
+    radius: baseTower.radius,
+    maxHp: baseTower.maxHp,
+    hp: baseTower.hp,
+    damage: baseTower.damage,
+    fireRate: baseTower.fireRate,
+    absoluteDefense: baseTower.absoluteDefense,
+    regenRate: baseTower.regenRate
+  };
+  cash = 0;
+  wave = 1;
+  lastFireTime = 0;
+
+  normalEnemyStats = { 
+    hp: startingEnemyStats.hp1, 
+    damage: startingEnemyStats.damage1,
+    speed: startingEnemyStats.speed1,
+    reward: startingEnemyStats.reward1
+  };
+  tankEnemyStats = { 
+    hp: startingEnemyStats.hp2, 
+    damage: startingEnemyStats.damage2,
+    speed: startingEnemyStats.speed2,
+    reward: startingEnemyStats.reward2
+  };
+
+  upgrades = {
+    up1cost: 10,
+    up2cost: 15,
+    up3cost: 15,
+    up4cost: 15,
+  }
+
+  bullets = [];
+  enemies = [];
+}
+
+
+
+setInterval(regen, 100);
+
+updateDisplay();
+setInterval(updateDisplay, 100);
+gameLoop();
+
+
+
+
+
+
+</script>
+</body>
+</html>
